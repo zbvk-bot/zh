@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 require '../db.php';
 
@@ -6,20 +10,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $pass = $_POST['password'];
 
-    // Ищем пользователя по email
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    // Проверяем пароль
     if ($user && password_verify($pass, $user['password_hash'])) {
         
-        // --- ВАЖНЫЕ ИЗМЕНЕНИЯ ---
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_role'] = $user['role']; // Сохраняем "браслет" (роль)
-        // ------------------------
+        $_SESSION['user_role'] = $user['role'];
 
-        // Маршрутизация: Админа — в панель, остальных — на главную
         if ($user['role'] === 'admin') {
             header("Location: admin_panel.php");
         } else {
